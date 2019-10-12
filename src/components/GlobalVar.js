@@ -3,11 +3,15 @@ const getImageId = '/getImageId'
 const getImageById = '/getImageById?imgId='
 const updateImage = '/updateImage?'
 const checkUsername = '/checkUsername'
+const getExplainsById = '/getExplainsById'
+const getExplainSelection = '/getExplainSelection'
 
 export default {
   backendIP,
   getImageId,
   getImageById,
   updateImage,
-  checkUsername
+  checkUsername,
+  getExplainsById,
+  getExplainSelection
 }
