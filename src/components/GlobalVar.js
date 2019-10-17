@@ -1,4 +1,4 @@
-const backendIP = 'http://127.0.0.1:8088'
+const backendIP = 'http://127.0.0.1:8089'
 const getImageId = '/getImageId'
 const getImageById = '/getImageById?imgId='
 const updateImage = '/updateImage?'

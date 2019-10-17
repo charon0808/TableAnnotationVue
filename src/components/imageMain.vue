@@ -1,5 +1,8 @@
 <template>
   <div id="imageMain">
+    <div id="imageNumber">
+      <span>图片编号：{{this.imageId}}</span>
+    </div>
     <div id="userInfo">
       <span>当前已登录：{{this.userAccessToken}}</span>
       <button v-on:click="logout">退出登录</button>
@@ -10,10 +13,42 @@
         <br />
         <br />
         <br />
-        <button class="hbtn hb-fill-on" v-on:click="currentRegion = '0'">原点</button>
-        <button class="hbtn hb-fill-on" v-on:click="currentRegion = '1'">x轴</button>
-        <button class="hbtn hb-fill-on" v-on:click="currentRegion = '2'">y轴</button>
-        <button class="hbtn hb-fill-on" v-on:click="currentRegion = '3'">有效点</button>
+        <span>x轴是否有具体的数字刻度:</span>
+        <select v-model="xKd">
+          <option value="1">是</option>
+          <option value="0">否</option>
+        </select>
+        <br />
+        <span>y轴是否有具体的数字刻度:</span>
+        <select v-model="yKd">
+          <option value="1">是</option>
+          <option value="0">否</option>
+        </select>
+        <br />
+        <span>当前标记的点类型:</span>
+        <select name="select" v-model="currentRegion">
+          <option :value="item.id" v-for="item in regionItems" :key="item">{{item.name}}</option>
+        </select>
+        <div>
+          x轴原点值：
+          <input type="text" v-model="xZero" />
+        </div>
+        <div>
+          y轴原点值：
+          <input type="text" v-model="yZero" />
+        </div>
+        <div>
+          x轴物理含义：
+          <input type="text" v-model="xMeaning" />
+        </div>
+        <div>
+          y轴物理含义：
+          <input type="text" v-model="yMeaning" />
+        </div>
+        <br />
+        <br />
+        <br />
+        <br />
         <button class="hbtn hb-fill-on" v-on:click="changeImage">换一张图片</button>
         <button class="hbtn hb-fill-on" v-on:click="dotRevert">撤销</button>
         <button class="hbtn hb-fill-on" v-on:click="done">提交</button>
@@ -44,7 +79,23 @@ export default {
       userAccessToken: '',
       currentRegion: '0',
       revertCount: 0,
-      explains: [{}]
+      explains: [{}],
+      regionItems: [
+        { id: '0', name: '原点' },
+        { id: '1', name: 'x轴' },
+        { id: '2', name: 'y轴' },
+        { id: '3', name: '有效点1' },
+        { id: '4', name: '有效点2' },
+        { id: '5', name: '有效点3' },
+        { id: '6', name: '有效点4' }
+      ],
+      tableNo: '1',
+      xKd: '1',
+      yKd: '1',
+      xZero: '0',
+      yZero: '0',
+      xMeaning: '',
+      yMeaning: ''
     }
   },
   components: {},
@@ -61,8 +112,18 @@ export default {
     }
   },
   methods: {
+    init() {
+      this.imageUrl = ''
+      this.imgId = ''
+      this.currentRegion = '0'
+      this.revertCount = 0
+      this.tableNo = '1'
+      this.xKd = '1'
+      this.yKd = '1'
+    },
     async changeImage() {
       var _this = this
+      this.init()
       await axios
         .get(GLOBAL.backendIP + GLOBAL.getImageId)
         .then(response => {
@@ -77,14 +138,21 @@ export default {
         })
       await this.getExplains()
     },
+    getZb() {
+      var zb = prompt('坐标值', '')
+      while (!this.isNumber(zb)) {
+        zb = prompt('请输入合法的数字', '')
+      }
+      return zb
+    },
     updateImage(x, y) {
-      var zb = ''
+      var zb = '-1'
       if (x !== -1 && y !== -1) {
-        if (this.currentRegion === '1' || this.currentRegion === '2') {
-          zb = prompt('坐标值', '')
-          while (!this.isNumber(zb)) {
-            zb = prompt('请输入合法的数字', '')
-          }
+        if (
+          (this.yKd === '1' && this.currentRegion === '2') ||
+          (this.xKd === '1' && this.currentRegion === '1')
+        ) {
+          zb = this.getZb()
         }
       }
       this.imageUrl =
@@ -101,7 +169,9 @@ export default {
         '&region=' +
         this.currentRegion +
         '&zb=' +
-        zb
+        zb +
+        '&tableNo=' +
+        this.tableNo
     },
     touchstart(e) {
       console.log('touchstart')
@@ -141,7 +211,7 @@ export default {
           console.log(error)
         })
     },
-    uploadExplainSelection() {
+    uploadAnnotation() {
       var _this = this
       var retEx = ''
       for (var i = 0; i < this.explains.length; i++) {
@@ -153,7 +223,9 @@ export default {
           params: {
             imgId: encodeURI(_this.imageId),
             username: encodeURI(_this.userAccessToken),
-            es: encodeURI(retEx)
+            es: encodeURI(retEx),
+            xMeaning: encodeURI(_this.xMeaning),
+            yMeaning: encodeURI(_this.yMeaning)
           }
         })
         .catch(error => {
@@ -162,7 +234,7 @@ export default {
         })
     },
     done() {
-      this.uploadExplainSelection()
+      this.uploadAnnotation()
       this.changeImage()
     },
     isNumber(val) {
@@ -177,9 +249,6 @@ export default {
     logout() {
       this.userAccessToken = ''
       localStorage.removeItem('userAccessToken')
-    },
-    getXY() {
-      
     }
   }
 }
@@ -204,5 +273,8 @@ export default {
 }
 #userInfo {
   text-align: right;
+}
+#imageNumber {
+  text-align: left;
 }
 </style>
