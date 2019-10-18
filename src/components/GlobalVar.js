@@ -5,6 +5,7 @@ const updateImage = '/updateImage?'
 const checkUsername = '/checkUsername'
 const getExplainsById = '/getExplainsById'
 const getExplainSelection = '/getExplainSelection'
+const checkBeforeSubmit = '/checkBeforeSubmit'
 
 export default {
   backendIP,
@@ -13,5 +14,6 @@ export default {
   updateImage,
   checkUsername,
   getExplainsById,
-  getExplainSelection
+  getExplainSelection,
+  checkBeforeSubmit
 }

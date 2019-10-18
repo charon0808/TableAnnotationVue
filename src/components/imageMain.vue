@@ -26,7 +26,7 @@
         </select>
         <br />
         <span>当前标记的点类型:</span>
-        <select name="select" v-model="currentRegion">
+        <select name="select" v-model="currentRegion" @change="regionChange">
           <option :value="item.id" v-for="item in regionItems" :key="item">{{item.name}}</option>
         </select>
         <div>
@@ -36,6 +36,10 @@
         <div>
           y轴原点值：
           <input type="text" v-model="yZero" />
+        </div>
+        <div>
+          图片标题（如果有的话）：
+          <input type="text" v-model="tableName" />
         </div>
         <div>
           x轴物理含义：
@@ -59,7 +63,9 @@
           <li style="color:#000;font-size:14px;" v-for="ex in this.explains" :key="ex">
             {{ ex.explain }}
             <br />
-            <input type="text" v-model="ex.explainSelection" />
+            <input type="hahtext" v-model="ex.explainSelection" width="600px" />
+            <br />
+            <br />
           </li>
         </ol>
       </div>
@@ -80,14 +86,15 @@ export default {
       currentRegion: '0',
       revertCount: 0,
       explains: [{}],
+      curveMeaning: ['', '', '', ''],
       regionItems: [
         { id: '0', name: '原点' },
         { id: '1', name: 'x轴' },
         { id: '2', name: 'y轴' },
-        { id: '3', name: '有效点1' },
-        { id: '4', name: '有效点2' },
-        { id: '5', name: '有效点3' },
-        { id: '6', name: '有效点4' }
+        { id: '3', name: '曲线1' },
+        { id: '4', name: '曲线2' },
+        { id: '5', name: '曲线3' },
+        { id: '6', name: '曲线4' }
       ],
       tableNo: '1',
       xKd: '1',
@@ -95,7 +102,8 @@ export default {
       xZero: '0',
       yZero: '0',
       xMeaning: '',
-      yMeaning: ''
+      yMeaning: '',
+      tableName: ''
     }
   },
   components: {},
@@ -120,6 +128,10 @@ export default {
       this.tableNo = '1'
       this.xKd = '1'
       this.yKd = '1'
+      this.tableName = ''
+      this.xMeaning = ''
+      this.yMeaning = ''
+      this.curveMeaning = ['', '', '', '']
     },
     async changeImage() {
       var _this = this
@@ -211,6 +223,16 @@ export default {
           console.log(error)
         })
     },
+    getCruveMeaning() {
+      var ret = ''
+      for (var i = 0; i < 4; i++) {
+        ret += '[' + i + ']' + this.curveMeaning[i]
+        if (i !== 3) {
+          ret += '&&'
+        }
+      }
+      return ret
+    },
     uploadAnnotation() {
       var _this = this
       var retEx = ''
@@ -221,11 +243,13 @@ export default {
       axios
         .get(GLOBAL.backendIP + GLOBAL.getExplainSelection, {
           params: {
-            imgId: encodeURI(_this.imageId),
+            imgId: _this.imageId,
             username: encodeURI(_this.userAccessToken),
             es: encodeURI(retEx),
             xMeaning: encodeURI(_this.xMeaning),
-            yMeaning: encodeURI(_this.yMeaning)
+            yMeaning: encodeURI(_this.yMeaning),
+            tableName: encodeURI(_this.tableName),
+            curveMeaning: encodeURI(_this.getCruveMeaning())
           }
         })
         .catch(error => {
@@ -233,7 +257,16 @@ export default {
           console.log(error)
         })
     },
-    done() {
+    async done() {
+      if (!this.localCheckBeforeSubmit()) {
+        return
+      }
+      var tmp = await this.checkBeforeSubmit()
+      console.log('test' + tmp)
+      if (tmp === 'f') {
+        alert('你漏掉了标记点（原点，x轴点，y轴点，有效点都至少标记一个）')
+        return
+      }
       this.uploadAnnotation()
       this.changeImage()
     },
@@ -249,6 +282,52 @@ export default {
     logout() {
       this.userAccessToken = ''
       localStorage.removeItem('userAccessToken')
+    },
+    async checkBeforeSubmit() {
+      var _this = this
+      var ret
+      await axios
+        .get(GLOBAL.backendIP + GLOBAL.checkBeforeSubmit, {
+          params: {
+            imgId: _this.imageId
+          }
+        })
+        .then(response => {
+          ret = response.data
+        })
+        .catch(error => {
+          this.tips = '查询失败，请检查网络连接'
+          console.log(error)
+        })
+      return ret
+    },
+    localCheckBeforeSubmit() {
+      if (this.xMeaning === '' || this.yMeaning === '') {
+        alert('你忘记填x轴或y轴表示的物理意义了')
+        return false
+      }
+      var ex
+      var flag = false
+      for (ex = 0; ex < this.explains.length; ex++) {
+        console.log(ex)
+        if (this.explains[ex].explainSelection !== '') {
+          flag = true
+        }
+      }
+      if (!flag) {
+        alert('你忘记填图片对应的解析了')
+      }
+      return flag
+    },
+    regionChange() {
+      if (this.currentRegion - '0' >= 3) {
+        if (this.curveMeaning[this.currentRegion - '3'] === '') {
+          this.curveMeaning[this.currentRegion - '3'] = prompt(
+            '你当前标记的这条曲线的含义：',
+            ''
+          )
+        }
+      }
     }
   }
 }
@@ -276,5 +355,13 @@ export default {
 }
 #imageNumber {
   text-align: left;
+}
+input[type='hahtext'] {
+  box-sizing: border-box;
+  -moz-box-sizing: border-box; /* Firefox */
+  -webkit-box-sizing: border-box; /* Safari */
+  padding: 0;
+  width: 600px;
+  height: 50px;
 }
 </style>
