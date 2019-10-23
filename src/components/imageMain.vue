@@ -63,14 +63,17 @@
           <li style="color:#000;font-size:14px;" v-for="ex in this.explains" :key="ex">
             {{ ex.explain }}
             <br />
-            <input type="hahtext" v-model="ex.explainSelection" width="600px" />
+            <textarea
+              rows="3"
+              cols="75"
+              type="hahtext"
+              v-model="ex.explainSelection"
+              width="600px"
+            />
             <br />
             <br />
           </li>
         </ol>
-        <div>
-          <li style="color:#000;font-size:14px;" v-for="code in this.tableCode" :key="code">{{code}}</li>
-        </div>
         <div>
           <span>如何标注：</span>
           <ol>
@@ -109,6 +112,10 @@
                 <li>
                   撤销按钮能够在你标错的时候撤销掉图中
                   <b>当前标记的点类型</b>中的最后一个点
+                </li>
+                <li>
+                  最好在你确定当前图片不属于需要标注的类型或者当前图片无法标注时使用
+                  <b>换一张图片</b>这个按钮，为了避免遗漏，我们会review所有被换掉的图片
                 </li>
               </ul>
             </li>
@@ -186,7 +193,11 @@ export default {
       var _this = this
       this.init()
       await axios
-        .get(GLOBAL.backendIP + GLOBAL.getImageId)
+        .get(GLOBAL.backendIP + GLOBAL.getImageId, {
+          params: {
+            username: _this.userAccessToken
+          }
+        })
         .then(response => {
           console.log(this)
           _this.imageUrl =
@@ -428,5 +439,9 @@ input[type='hahtext'] {
   padding: 0;
   width: 600px;
   height: 50px;
+}
+.hli {
+  text-align: center;
+  text-align: left;
 }
 </style>
