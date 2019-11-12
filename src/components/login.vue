@@ -102,7 +102,9 @@ export default {
       console.log('hah: ' + checkRet)
       if (checkRet === true) {
         localStorage.setItem('userAccessToken', this.name)
-        this.$router.push({ name: 'imageMain' })
+        if (this.name === 'test') {
+          this.$router.push({ name: 'explainAnnotation' })
+        } else this.$router.push({ name: 'imageMain' })
       } else {
         this.error.name = '你还没有注册，联系管理员'
       }

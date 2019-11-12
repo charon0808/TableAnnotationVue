@@ -74,6 +74,17 @@
             <br />
           </li>
         </ol>
+        <ul>
+          <li>
+            <div>
+              有什么附加信息吗，有的话写在下面：
+              <br />
+              <textarea rows="3" cols="75" type="hahtext" v-model="extra" width="600px" />
+              <br />
+              <br />
+            </div>
+          </li>
+        </ul>
         <div>
           <span>如何标注：</span>
           <ol>
@@ -107,6 +118,8 @@
             <li>
               注意事项：
               <ul>
+                <li>填写x轴和y轴的物理含义时，把他们的单位也带上，应该这样写： 物理含义（单位）</li>
+                <li>填写x轴和y轴对应的坐标值时，填写纯数字，他们的单位已经包括在xy轴物理含义里面了</li>
                 <li>对于形式为折线图的类型，尽量选中折线上的每个点，如果点的数量多的话，选出重要的点。注意标记这样的图时尽量每条曲线标记相同的点个数</li>
                 <li>在标注每条曲线时，最好按照曲线的变化趋势标，对于非函数的曲线，就必须按照趋势标注了</li>
                 <li>
@@ -158,7 +171,8 @@ export default {
       xMeaning: '',
       yMeaning: '',
       tableName: '',
-      tableCode: []
+      tableCode: [],
+      extra: ''
     }
   },
   components: {},
@@ -183,11 +197,14 @@ export default {
       this.tableNo = '1'
       this.xKd = '1'
       this.yKd = '1'
+      this.xZero = '0'
+      this.yZero = '0'
       this.tableName = ''
       this.xMeaning = ''
       this.yMeaning = ''
       this.curveMeaning = ['', '', '', '', '']
       this.tableCode = []
+      this.extra = ''
     },
     async changeImage() {
       var _this = this
@@ -195,7 +212,8 @@ export default {
       await axios
         .get(GLOBAL.backendIP + GLOBAL.getImageId, {
           params: {
-            username: _this.userAccessToken
+            username: _this.userAccessToken,
+            keyiflag: false
           }
         })
         .then(response => {
@@ -309,7 +327,8 @@ export default {
             xMeaning: encodeURI(_this.xMeaning),
             yMeaning: encodeURI(_this.yMeaning),
             tableName: encodeURI(_this.tableName),
-            curveMeaning: encodeURI(_this.getCruveMeaning())
+            curveMeaning: encodeURI(_this.getCruveMeaning()),
+            extra: encodeURI(_this.extra)
           }
         })
         .catch(error => {
@@ -366,6 +385,7 @@ export default {
         alert('你忘记填x轴或y轴表示的物理意义了')
         return false
       }
+      /*
       var ex
       var flag = false
       for (ex = 0; ex < this.explains.length; ex++) {
@@ -374,10 +394,14 @@ export default {
           flag = true
         }
       }
+      if (this.extra !== '') {
+        flag = true
+      }
       if (!flag) {
         alert('你忘记填图片对应的解析了')
       }
-      return flag
+      return flag*/
+      return true
     },
     regionChange() {
       if (this.currentRegion - '0' >= 3) {
