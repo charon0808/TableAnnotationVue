@@ -5,6 +5,7 @@
     </div>
     <div id="userInfo">
       <span>当前已登录：{{this.userAccessToken}}</span>
+      <span>你已经标记了{{this.count}}张图片</span>
       <button v-on:click="logout">退出登录</button>
     </div>
     <div>
@@ -77,7 +78,7 @@
         <ul>
           <li>
             <div>
-              有什么附加信息吗，有的话写在下面：
+              如果上面的解析没有解题需要能够描述图片的文字，那写一段在下面：
               <br />
               <textarea rows="3" cols="75" type="hahtext" v-model="extra" width="600px" />
               <br />
@@ -172,7 +173,8 @@ export default {
       yMeaning: '',
       tableName: '',
       tableCode: [],
-      extra: ''
+      extra: '',
+      count: ''
     }
   },
   components: {},
@@ -227,6 +229,7 @@ export default {
           console.log(error)
         })
       await this.getExplains()
+      this.count = await this.getUserCount()
     },
     getZb() {
       var zb = prompt('坐标值', '')
@@ -380,28 +383,44 @@ export default {
         })
       return ret
     },
+    async getUserCount() {
+      var _this = this
+      var ret
+      await axios
+        .get(GLOBAL.backendIP + GLOBAL.getUserAnnotationCount, {
+          params: {
+            username: _this.userAccessToken
+          }
+        })
+        .then(response => {
+          _this.count = response.data
+          ret = response.data
+        })
+        .catch(error => {
+          this.tips = '查询失败，请检查网络连接'
+          console.log(error)
+        })
+      return ret
+    },
     localCheckBeforeSubmit() {
       if (this.xMeaning === '' || this.yMeaning === '') {
         alert('你忘记填x轴或y轴表示的物理意义了')
         return false
       }
-      /*
       var ex
-      var flag = false
+      var flag = true
       for (ex = 0; ex < this.explains.length; ex++) {
         console.log(ex)
-        if (this.explains[ex].explainSelection !== '') {
-          flag = true
+        if (this.explains[ex].explainSelection === '') {
+          flag = false
         }
       }
-      if (this.extra !== '') {
-        flag = true
-      }
       if (!flag) {
-        alert('你忘记填图片对应的解析了')
+        alert(
+          '你忘记填图片对应的解析了，如果解析中没有直接描述图片的句子，那可以归纳一下解析中用到了的图片中的信息'
+        )
       }
-      return flag*/
-      return true
+      return flag
     },
     regionChange() {
       if (this.currentRegion - '0' >= 3) {

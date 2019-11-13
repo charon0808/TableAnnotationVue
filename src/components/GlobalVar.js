@@ -8,6 +8,7 @@ const getExplainSelection = '/getExplainSelection'
 const checkBeforeSubmit = '/checkBeforeSubmit'
 const getTableCode = '/getTableCode'
 const uploadExplainAnnotation = '/uploadExplainAnnotation'
+const getUserAnnotationCount = '/getUserAnnotationCount'
 
 export default {
   backendIP,
@@ -19,5 +20,7 @@ export default {
   getExplainSelection,
   checkBeforeSubmit,
   getTableCode,
-  uploadExplainAnnotation
+  uploadExplainAnnotation,
+  getUserAnnotationCount
+
 }
